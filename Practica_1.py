@@ -1,7 +1,7 @@
 from multiprocessing import Process
 from multiprocessing import BoundedSemaphore, Semaphore, Lock
 from multiprocessing import current_process
-from multiprocessing import Value, Array
+from multiprocessing import Value, Array, Manager
 from time import sleep
 from random import random, randint
 
@@ -73,7 +73,6 @@ def consumer(numbers_prod, lista_sem, lista_full, result):
     for s in lista_sem:
         s.acquire()
     
-    indice = 0
     
     while not_all_negative(numbers_prod):
         index = index_min(numbers_prod)
@@ -82,9 +81,8 @@ def consumer(numbers_prod, lista_sem, lista_full, result):
         lista_full[index].release()
         delay()
         lista_sem[index].acquire()
-        result[indice] = number
+        result.append(number)
         
-        indice +=1
         print("escribiendo el numero")
     
     
@@ -100,7 +98,7 @@ def main():
     lista_prod es la lista con los productores
     cons es el consumidor
     """
-    res = Array('i',NPROD * N)
+    res =Manager().list()
     numbers_prod = [Value('i',0) for i in range(NPROD)]
     
     lista_sem = [Semaphore(0) for i in range(NPROD)]
