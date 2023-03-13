@@ -61,66 +61,75 @@ def producer(array, indice_lista, sem, full):
         Además los numeros que genera se meteran en un Array de donde lo cogerá 
         el consumidor.
     """
-    
+    delay(10)
     seed = randint(0,5)
-    for i in range(TAM_ARRAY): #Primero llenamos el array 
+    for i in range(TAM_ARRAY): #Primero llenamos el buffe del productor 
         seed += randint(1, 7)
         array[i] = seed
         print("PRODUCIENDO")
     sem.release()
     full.acquire()
-     
+    
+    print_array(array)
+    
     for i in range(N-TAM_ARRAY):
+        full.acquire()
         print("PRODUCIENDO")
-        array[indice_lista.value]
+        seed += randint(1, 7)
+        array[indice_lista.value] = seed
+        print("escribiendo el numero en el bufer del productor")
         indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY
         sem.release()
-        full.acquire()
     
     
     array[indice_lista.value] = -1
     indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY
-    sem.release()
-    
-    for i in range(100):
+    for _ in range(TAM_ARRAY):
         indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY
+        delay(10)
         sem.release()
+        full.acquire()
 
 def consumer(numbers_prod, lista_indices_array, lista_array, lista_sem, lista_full, result):
     """
     CONSUMIDOR:
+        print("escribiendo el numero")
         Espera a que todos los productores hayan producido la primera vez, 
         y posteriormente hace signal en el semaforo del productor del que ha consumido 
         y pone a wait el semaforo de estar lleno donde se guardan los numeros producidos
     """
+    
     #Primero esperamos a que todos lor productores llenen los buffer 
-    """
-    for s in lista_sem:
-        for _ in range(TAM_ARRAY):
-            print("HOLA")
-            s.acquire()
-    """
+    for i in range(NPROD):
+        lista_sem[i].acquire()
     
     #En este momento ya están todos lo buffer llenos
     for i in range(NPROD):
+        delay()
         numbers_prod[i]= lista_array[i][lista_indices_array[i].value]
-    
-    for sem_full in lista_full:
-        sem_full.release()
+        lista_full[i].release()
        
     while not_all_negative(numbers_prod):
         index = index_min(numbers_prod)
         number = minimo(numbers_prod)
-        numbers_prod[index] = lista_array[index][lista_indices_array[index].value]
-        print("cogiendo el un numero")
-        lista_full[index].release()
-        delay()
+        print(f"cogiendo el un numero de la lista comun {index}")
+        print(lista_sem[index])
         lista_sem[index].acquire()
+        numbers_prod[index] = lista_array[index][lista_indices_array[index].value]
+        lista_full[index].release()
+        print(f" estado del semaforo despues del release {lista_full[index]}")
+        print(f"cogiendo el un numero del buffer del prod {index} y metiendolo en la lista comun")
+        delay()
+        print("escribiendo el numero en el resultado")
         result.append((number,index))
         
-        print("escribiendo el numero")
+        
+        print(result)
         print_array(numbers_prod)
-    
+        
+    for i in range(NPROD):
+        lista_full[i].release()
+        
     print("FIN DE CONSUMER")
     
     
