@@ -12,7 +12,7 @@ TAM_ARRAY = 5 #tamaño del array10 circular
 def delay(factor = 3):
     sleep(random()/factor) 
     
-def print_array(array):
+def print_array(array): 
     s = ""
     for i in array:
         s = s + f"| {i}"
