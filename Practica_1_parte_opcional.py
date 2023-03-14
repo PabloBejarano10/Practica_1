@@ -6,8 +6,8 @@ from time import sleep
 from random import random, randint
 
 NPROD = 6
-N = 5 #cantidad de numeros generados por cada productor 
-TAM_ARRAY = 5 #tamaño del array circular
+N = 10 #cantidad de numeros generados por cada productor 
+TAM_ARRAY = 5 #tamaño del array10 circular
 
 def delay(factor = 3):
     sleep(random()/factor) 
@@ -63,7 +63,7 @@ def producer(array, indice_lista, sem, full):
     """
     delay(10)
     seed = randint(0,5)
-    for i in range(TAM_ARRAY): #Primero llenamos el buffe del productor 
+    for i in range(min(TAM_ARRAY,N)): #Primero llenamos el buffe del productor 
         seed += randint(1, 7)
         array[i] = seed
         print("PRODUCIENDO")
@@ -83,7 +83,6 @@ def producer(array, indice_lista, sem, full):
     
     
     array[indice_lista.value] = -1
-    indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY
     for _ in range(TAM_ARRAY):
         indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY
         delay(10)
@@ -112,11 +111,14 @@ def consumer(numbers_prod, lista_indices_array, lista_array, lista_sem, lista_fu
     while not_all_negative(numbers_prod):
         index = index_min(numbers_prod)
         number = minimo(numbers_prod)
+        
+        numbers_prod[index] = lista_array[index][lista_indices_array[index].value]
+        lista_full[index].release()
+        
         print(f"cogiendo el un numero de la lista comun {index}")
         print(lista_sem[index])
         lista_sem[index].acquire()
-        numbers_prod[index] = lista_array[index][lista_indices_array[index].value]
-        lista_full[index].release()
+        
         print(f" estado del semaforo despues del release {lista_full[index]}")
         print(f"cogiendo el un numero del buffer del prod {index} y metiendolo en la lista comun")
         delay()
