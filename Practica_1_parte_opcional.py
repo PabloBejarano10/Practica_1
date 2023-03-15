@@ -69,9 +69,7 @@ def producer(array, indice_lista, sem, full):
         print("PRODUCIENDO")
     sem.release()
     full.acquire()
-    
-    print_array(array)
-    
+
     for i in range(N-TAM_ARRAY):
         full.acquire()
         print("PRODUCIENDO")
@@ -92,7 +90,6 @@ def producer(array, indice_lista, sem, full):
 def consumer(numbers_prod, lista_indices_array, lista_array, lista_sem, lista_full, result):
     """
     CONSUMIDOR:
-        print("escribiendo el numero")
         Espera a que todos los productores hayan producido la primera vez, 
         y posteriormente hace signal en el semaforo del productor del que ha consumido 
         y pone a wait el semaforo de estar lleno donde se guardan los numeros producidos
@@ -116,18 +113,12 @@ def consumer(numbers_prod, lista_indices_array, lista_array, lista_sem, lista_fu
         lista_full[index].release()
         
         print(f"cogiendo el un numero de la lista comun {index}")
-        print(lista_sem[index])
         lista_sem[index].acquire()
         
-        print(f" estado del semaforo despues del release {lista_full[index]}")
         print(f"cogiendo el un numero del buffer del prod {index} y metiendolo en la lista comun")
         delay()
         print("escribiendo el numero en el resultado")
         result.append((number,index))
-        
-        
-        print(result)
-        print_array(numbers_prod)
         
     for i in range(NPROD):
         lista_full[i].release()
