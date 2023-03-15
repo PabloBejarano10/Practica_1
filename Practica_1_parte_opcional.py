@@ -5,7 +5,7 @@ from multiprocessing import Value, Array, Manager
 from time import sleep
 from random import random, randint
 
-NPROD = 6
+NPROD = 2
 N = 10 #cantidad de numeros generados por cada productor 
 TAM_ARRAY = 5 #tamaño del array10 circular
 
@@ -33,8 +33,8 @@ def index_min(a):
 
 
 def minimo(a):
-    """
-    Devuelve el minimo del array a 
+    """(0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5),
+    Devuelve el minimo del array a Practica_1_parte_opcional.py
     """
     m = min(x for x in a if x >=0)
     return m
@@ -61,26 +61,21 @@ def producer(array, indice_lista, sem, full):
         Además los numeros que genera se meteran en un Array de donde lo cogerá 
         el consumidor.
     """
-    delay(10)
     seed = randint(0,5)
-    for i in range(min(TAM_ARRAY,N)): #Primero llenamos el buffe del productor 
-        seed += randint(1, 7)
-        array[i] = seed
-        print("PRODUCIENDO")
-    sem.release()
-    full.acquire()
-
-    for i in range(N-TAM_ARRAY):
+    for i in range(N): #Primero llenamos el buffer del productor    
         full.acquire()
-        print("PRODUCIENDO")
         seed += randint(1, 7)
+        print("PRODUCIENDO")
         array[indice_lista.value] = seed
         print("escribiendo el numero en el bufer del productor")
-        indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY
-        sem.release()
+        indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY #actualizamos el idice
+        sem.release()    
     
+    full.acquire()
+    sem.release()
     
     array[indice_lista.value] = -1
+    
     for _ in range(TAM_ARRAY):
         indice_lista.value = (indice_lista.value + 1) % TAM_ARRAY
         delay(10)
@@ -97,7 +92,10 @@ def consumer(numbers_prod, lista_indices_array, lista_array, lista_sem, lista_fu
     
     #Primero esperamos a que todos lor productores llenen los buffer 
     for i in range(NPROD):
-        lista_sem[i].acquire()
+        for _ in range(TAM_ARRAY): 
+            delay(10)
+            lista_full[i].release()
+            lista_sem[i].acquire()
     
     #En este momento ya están todos lo buffer llenos
     for i in range(NPROD):
